@@ -15,8 +15,8 @@
   "erro_cv": 0.09699999999999999,
   "folhas": 37,
   "profundidade": 10,
-  "prob_logistica_min_teste": 0.5261799928058327,
-  "prob_logistica_max_teste": 0.6534312329818774,
+  "prob_logistica_min_teste": 0.5261799928058326,
+  "prob_logistica_max_teste": 0.6534312329818776,
   "metricas": [
     {
       "modelo": "Regressão logística",
@@ -44,7 +44,7 @@
     }
   ],
   "versoes": {
-    "python": "3.12.14",
+    "python": "3.13.7",
     "numpy": "2.5.5",
     "pandas": "3.1.1",
     "scikit-learn": "1.9.1",

@@ -23,7 +23,7 @@ import statsmodels
 import statsmodels.api as sm
 from sklearn.metrics import confusion_matrix, roc_auc_score, roc_curve
 from sklearn.model_selection import StratifiedKFold, cross_val_score
-from sklearn.tree import DecisionTreeClassifier, export_text, plot_tree
+from sklearn.tree import DecisionTreeClassifier, export_text
 
 
 BASE = Path(__file__).resolve().parent
@@ -34,6 +34,7 @@ COR_ARV = "#205D83"
 
 
 def ler_dados(caminho):
+    """Lê um CSV e valida as colunas, os valores e as classes da resposta y."""
     dados = pd.read_csv(caminho)
     if set(dados.columns) != {"x1", "x2", "y"}:
         raise ValueError(f"{caminho}: são esperadas exatamente as colunas x1, x2 e y.")
@@ -47,6 +48,7 @@ def ler_dados(caminho):
 
 
 def criar_arvore(alpha=0.0):
+    """Cria uma árvore com configurações fixas e a intensidade de poda informada."""
     # Entropia corresponde ao critério de deviance usado no crescimento em tree.
     # min_samples_split=10 e min_samples_leaf=5 aproximam minsize/mincut de tree.
     # A poda ccp_alpha usa impureza; não é uma tradução numérica de prune.misclass.
@@ -57,6 +59,7 @@ def criar_arvore(alpha=0.0):
 
 
 def selecionar_poda(X, y):
+    """Compara podas no treino e retorna a tabela CV, a árvore ajustada e a escolha."""
     # Grade fixada antes de avaliar o teste. Todos os candidatos usam os mesmos
     # dez lotes de treino. Em empate, escolhemos o maior alpha (poda mais forte).
     alphas = np.r_[0.0, np.logspace(-4, -1, 41)]
@@ -77,6 +80,7 @@ def selecionar_poda(X, y):
 
 
 def avaliar(nome, y, probabilidades):
+    """Converte probabilidades em classes e retorna métricas e previsões no corte 0,50."""
     # Como no ifelse(prob >= threshold, ...) do professor, classe positiva = 1.
     previsto = (np.asarray(probabilidades) >= 0.5).astype(int)
     tn, fp, fn, tp = confusion_matrix(y, previsto, labels=[0, 1]).ravel()
@@ -89,11 +93,13 @@ def avaliar(nome, y, probabilidades):
 
 
 def salvar_figura(fig, destino):
+    """Salva uma figura em PNG e fecha a imagem para liberar memória."""
     fig.savefig(destino, dpi=190, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 
-def figuras(treino, teste, logistica, arvore, tabela_cv, escolhido, probs, saida):
+def figuras(treino, teste, logistica, arvore, probs, saida):
+    """Gera as duas figuras do relatório: dados/regiões previstas e curvas ROC."""
     plt.rcParams.update({"font.size": 11, "axes.spines.top": False,
                          "axes.spines.right": False, "font.family": "DejaVu Sans"})
     # O gráfico geométrico usa somente os dados de treinamento.
@@ -134,26 +140,10 @@ def figuras(treino, teste, logistica, arvore, tabela_cv, escolhido, probs, saida
     eixo.legend(loc="lower right", fontsize=9); eixo.grid(alpha=.2)
     salvar_figura(fig, saida / "02_curvas_roc.png")
 
-    fig, eixo = plt.subplots(figsize=(9, 4.1), constrained_layout=True)
-    plot_tree(arvore, feature_names=VARIAVEIS, class_names=["0", "1"],
-              impurity=False, proportion=False, filled=True, rounded=True,
-              precision=2, fontsize=10, max_depth=2, ax=eixo)
-    eixo.set_title(f"Três níveis iniciais da árvore de {arvore.get_n_leaves()} folhas")
-    salvar_figura(fig, saida / "03_arvore.png")
-
-    fig, eixo = plt.subplots(figsize=(6.8, 4.1), constrained_layout=True)
-    eixo.errorbar(tabela_cv.alpha, tabela_cv.erro_cv, yerr=tabela_cv.erro_padrao_cv,
-                  fmt=".-", color=COR_ARV, capsize=2, lw=1)
-    eixo.axvline(escolhido.alpha, color=COR_LOG, ls="--", label=f"alpha escolhido = {escolhido.alpha:.6f}")
-    eixo.set_xscale("symlog", linthresh=1e-4)
-    eixo.set_xlim(0, .115)
-    eixo.set(xlabel="Parâmetro de poda alpha", ylabel="Proporção de erros de validação",
-             title="Validação cruzada em 10 lotes do treino")
-    eixo.legend(fontsize=9); eixo.grid(alpha=.2)
-    salvar_figura(fig, saida / "04_validacao_cruzada.png")
-
 
 def main():
+    """Coordena a leitura, o treinamento, a avaliação e a gravação dos resultados."""
+    # 1. Define as pastas e lê os dois conjuntos fornecidos na questão.
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dados", type=Path, default=BASE / "dados")
     parser.add_argument("--saida", type=Path, default=BASE / "resultados")
@@ -164,10 +154,12 @@ def main():
     if not treino.merge(teste, on=VARIAVEIS, how="inner").empty:
         raise ValueError("Há preditores idênticos nos arquivos de treino e teste.")
     X, y = treino[VARIAVEIS], treino.y
+    # 2. Ajusta a regressão logística e seleciona/ajusta a árvore usando só o treino.
     # GLM binomial com intercepto e sem penalização: paralelo ao glm(...,
     # family=binomial) de R. Não criamos termos quadráticos ou interações.
     logistica = sm.GLM(y, sm.add_constant(X), family=sm.families.Binomial()).fit()
     tabela_cv, arvore, escolhido = selecionar_poda(X, y)
+    # 3. Estima probabilidades no teste e calcula as métricas de cada modelo.
     probs = {"Regressão logística": np.asarray(logistica.predict(sm.add_constant(teste[VARIAVEIS]))),
              "Árvore de classificação": arvore.predict_proba(teste[VARIAVEIS])[:, 1]}
     metricas = []
@@ -179,6 +171,7 @@ def main():
         previsoes[f"prob_{sufixo}"] = prob
         previsoes[f"prev_{sufixo}"] = previsto
     metricas = pd.DataFrame(metricas)
+    # 4. Exporta previsões, métricas e informações dos modelos para consulta.
     metricas.to_csv(args.saida / "metricas_teste.csv", index=False)
     previsoes.to_csv(args.saida / "previsoes_teste.csv", index=False)
     tabela_cv.to_csv(args.saida / "validacao_cruzada.csv", index=False)
@@ -210,7 +203,8 @@ def main():
     regras = export_text(arvore, feature_names=VARIAVEIS, decimals=6)
     (args.saida / "regras_arvore.txt").write_text(regras, encoding="utf-8")
     (args.saida / "resumo_logistica.txt").write_text(str(logistica.summary()), encoding="utf-8")
-    figuras(treino, teste, logistica, arvore, tabela_cv, escolhido, probs, args.saida)
+    # 5. Gera somente os dois gráficos utilizados no relatório e exibe o resumo.
+    figuras(treino, teste, logistica, arvore, probs, args.saida)
     print("\nMétricas de teste (classe positiva = 1; corte = 0,50):")
     print(metricas.to_string(index=False))
     print(f"\nÁrvore: {arvore.get_n_leaves()} folhas; alpha={escolhido.alpha:.6f}; erro CV={escolhido.erro_cv:.3f}")

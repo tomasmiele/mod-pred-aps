@@ -1,3 +1,4 @@
+# Requer Python 3.12 ou superior. Instale no ambiente .venv do projeto.
 numpy==2.5.5
 pandas==3.1.1
 scipy==1.18.1
