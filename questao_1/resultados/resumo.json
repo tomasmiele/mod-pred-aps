@@ -1,0 +1,54 @@
+{
+  "n_treino": 1000,
+  "n_teste": 1000,
+  "classes_treino": {
+    "1": 595,
+    "0": 405
+  },
+  "classes_teste": {
+    "1": 612,
+    "0": 388
+  },
+  "classe_majoritaria_treino": 1,
+  "acuracia_baseline_teste": 0.612,
+  "alpha": 0.0031622776601683794,
+  "erro_cv": 0.09699999999999999,
+  "folhas": 37,
+  "profundidade": 10,
+  "prob_logistica_min_teste": 0.5261799928058327,
+  "prob_logistica_max_teste": 0.6534312329818774,
+  "metricas": [
+    {
+      "modelo": "Regressão logística",
+      "acuracia": 0.612,
+      "erro": 0.388,
+      "sensibilidade": 1.0,
+      "especificidade": 0.0,
+      "auc": 0.48501617141702047,
+      "TN": 0,
+      "FP": 388,
+      "FN": 0,
+      "TP": 612
+    },
+    {
+      "modelo": "Árvore de classificação",
+      "acuracia": 0.9,
+      "erro": 0.1,
+      "sensibilidade": 0.8872549019607843,
+      "especificidade": 0.9201030927835051,
+      "auc": 0.9491463681692609,
+      "TN": 357,
+      "FP": 31,
+      "FN": 69,
+      "TP": 543
+    }
+  ],
+  "versoes": {
+    "python": "3.12.14",
+    "numpy": "2.5.5",
+    "pandas": "3.1.1",
+    "scikit-learn": "1.9.1",
+    "statsmodels": "0.15.0",
+    "matplotlib": "3.11.2"
+  }
+}
