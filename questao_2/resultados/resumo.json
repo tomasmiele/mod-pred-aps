@@ -1,0 +1,63 @@
+{
+  "n_total": 20433,
+  "n_treino": 10216,
+  "n_teste": 10217,
+  "alvo": "median_house_value",
+  "p": 9,
+  "colunas_codificadas": [
+    "longitude",
+    "latitude",
+    "housing_median_age",
+    "total_rooms",
+    "total_bedrooms",
+    "population",
+    "households",
+    "median_income",
+    "ocean_proximity=<1H OCEAN",
+    "ocean_proximity=INLAND",
+    "ocean_proximity=ISLAND",
+    "ocean_proximity=NEAR BAY",
+    "ocean_proximity=NEAR OCEAN"
+  ],
+  "m_escolhido": 8,
+  "B_final": 1000,
+  "B_validacao": 200,
+  "sementes": {
+    "divisao": 42,
+    "interna": 314,
+    "validacao": 2026,
+    "final": 42
+  },
+  "rmse_metricas": [
+    {
+      "modelo": "Árvore única",
+      "m": 9,
+      "arvores": 1,
+      "rmse_teste": 70118.41265467659
+    },
+    {
+      "modelo": "Bagging",
+      "m": 9,
+      "arvores": 1000,
+      "rmse_teste": 49833.11859011405
+    },
+    {
+      "modelo": "Bagging + subespaço",
+      "m": 8,
+      "arvores": 1000,
+      "rmse_teste": 48580.31283087635
+    }
+  ],
+  "ganho_subespaco_percentual": 2.5140023235195117,
+  "fracao_unicos_media_bagging": 0.6320183046202036,
+  "fracao_unicos_teorica": 0.6321385646255161,
+  "mesmos_bootstraps": true,
+  "n_no_teto": 958,
+  "versoes": {
+    "python": "3.13.7",
+    "numpy": "2.5.5",
+    "pandas": "3.1.1",
+    "scikit-learn": "1.9.1",
+    "matplotlib": "3.11.2"
+  }
+}

@@ -1,0 +1,4 @@
+modelo,m,arvores,rmse_teste
+Árvore única,9,1,70118.41265467659
+Bagging,9,1000,49833.11859011405
+Bagging + subespaço,8,1000,48580.31283087635
