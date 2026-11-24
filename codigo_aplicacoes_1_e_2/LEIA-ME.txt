@@ -1,0 +1,2 @@
+Coloque churn.csv ao lado de aplicacao_1_churn.py e used_cars.csv ao lado de aplicacao_2_carros.py.
+Dependencias: pandas numpy scikit-learn statsmodels matplotlib. Rodar: python aplicacao_1_churn.py
